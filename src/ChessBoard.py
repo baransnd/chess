@@ -6,6 +6,7 @@ from ChessLogic import GameState
 IMAGES = {}
 BOARD_SIZE = 512
 SQUARE_SIZE = BOARD_SIZE / 8
+MAX_FPS = 10
 
 dragging_piece = None
 drag_start = None
@@ -30,6 +31,7 @@ def main():
         draw_board(screen)
         draw_pieces(screen, gs.board)
         
+        clock.tick(MAX_FPS)
         pygame.display.flip()
 
 
