@@ -38,7 +38,7 @@ def main():
     """
     creates a board of 8x8 with the correct colors
     """
-
+    
 def draw_board(screen):
     for row in range(8):
         for column in range(8):
