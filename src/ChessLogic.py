@@ -20,22 +20,55 @@ class GameState():
         start_row, start_column = start
         end_row, end_column = end
         piece = self.board[start_row][start_column]
-        
-        if (self.check_move(piece,start,end)):
-            if self.board[end_row][end_column] == "--":
-                self.board[end_row][end_column] = self.board[start_row][start_column]
+
+        # Generate all possible moves for the current color
+        all_moves = self.generate_moves("white" if self.white_to_move else "black")
+
+        # Check if the move is in the list of possible moves
+        if ((start_row, start_column), (end_row, end_column), self.board[end_row][end_column]) in all_moves:
+            if (self.is_check_after_move(start, end)):
+                print("Invalid move, king in check")
+            else:
+                target_piece = self.board[end_row][end_column]
+
+                # Make the move
+                self.board[end_row][end_column] = piece
                 self.board[start_row][start_column] = "--"
                 self.white_to_move = not self.white_to_move
-            elif(self.check_capture(piece, end)):
-                print(start, end)
-                self.board[end_row][end_column] = self.board[start_row][start_column]
-                self.board[start_row][start_column] ="--"
-                self.white_to_move = not self.white_to_move
-            else:
-                print("can not capture own piece")
+
+                # Print the move details
+                print(f"Moved {piece} from {start} to {end}")
+
+                # Check if a capture occurred
+                if target_piece != "--":
+                    print(f"Captured {target_piece} at {end}")
+
         else:
-            print("impossible move")
-            pass
+            print("Invalid move")
+            
+        
+    def is_check_after_move(self, start, end):
+        # Simulate the move on the current game state
+        piece = self.board[start[0]][start[1]]
+        target_piece = self.board[end[0]][end[1]]
+        self.board[end[0]][end[1]] = piece
+        self.board[start[0]][start[1]] = "--"
+
+        # Check if the opponent can capture the king in the next move
+        opponent_color = "black" if self.white_to_move else "white"
+        opponent_moves = self.generate_moves(opponent_color)
+
+        # Revert the simulated move
+        self.board[start[0]][start[1]] = piece
+        self.board[end[0]][end[1]] = target_piece
+
+        for move in opponent_moves:
+            print(move)
+            if "king" in move[2]:
+                return True
+
+        return False
+    
         
     """
     Checks if the captured piece is not of the same color.
