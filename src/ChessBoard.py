@@ -11,6 +11,7 @@ MAX_FPS = 10
 dragging_piece = None
 drag_start = None
 
+        
 def main():
     pygame.init()
     screen = pygame.display.set_mode((BOARD_SIZE, BOARD_SIZE))
@@ -18,7 +19,6 @@ def main():
     clock = pygame.time.Clock()
     gs = GameState()
     load_pieces()
-    
     running = True
     while (running):
         for e in pygame.event.get():
