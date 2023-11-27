@@ -28,25 +28,35 @@ class GameState():
         if ((start_row, start_column), (end_row, end_column), self.board[end_row][end_column]) in all_moves:
             if (self.is_check_after_move(start, end)):
                 print("Invalid move, king in check")
+                return False
             else:
-                target_piece = self.board[end_row][end_column]
-
-                # Make the move
-                self.board[end_row][end_column] = piece
-                self.board[start_row][start_column] = "--"
-                self.white_to_move = not self.white_to_move
-
-                # Print the move details
-                print(f"Moved {piece} from {start} to {end}")
-
-                # Check if a capture occurred
-                if target_piece != "--":
-                    print(f"Captured {target_piece} at {end}")
-
+                self.move(start, end)
+                return True
         else:
             print("Invalid move")
+            return False
+            
+    def move(self, start, end):
+        start_row, start_column = start
+        end_row, end_column = end
+        piece = self.board[start_row][start_column]
+        
+        # Make the move
+        self.board[end_row][end_column] = piece
+        self.board[start_row][start_column] = "--"
+        self.white_to_move = not self.white_to_move
+            
+    def check_for_promotion(self, piece, end_row):   
+           return ("pawn" in piece) and (end_row == 0 and piece.startswith("white")) or (end_row == 7 and piece.startswith("black"))
+       
+    def promote_pawn(self, end, piece):
+        row, col = end
+        color = "black" if self.white_to_move else "white"
+        promoted_piece = f"{color}-{piece}"
+        self.board[row][col] = promoted_piece
             
         
+            
     def is_check_after_move(self, start, end):
         # Simulate the move on the current game state
         piece = self.board[start[0]][start[1]]

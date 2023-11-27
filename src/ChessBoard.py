@@ -27,7 +27,7 @@ def main():
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 handle_mouse_down(e, gs)
             elif e.type == pygame.MOUSEBUTTONUP:
-                handle_mouse_up(e,gs)
+                handle_mouse_up(e,gs, screen)
         draw_board(screen)
         draw_pieces(screen, gs.board)
         
@@ -74,15 +74,48 @@ def handle_mouse_down(event, gs):
         dragging_piece = gs.board[row][col]
         drag_start = (row, col)
 
-def handle_mouse_up(event, gs):
+def handle_mouse_up(event, gs, screen):
     global dragging_piece, drag_start  # Use global variables
     if event.button == 1 and dragging_piece != "--":
         col = int(event.pos[0] // SQUARE_SIZE)
         row = int(event.pos[1] // SQUARE_SIZE)
         end_position = (row, col)
-        gs.move_piece(drag_start, end_position)
+        if gs.move_piece(drag_start, end_position):
+            if gs.check_for_promotion(dragging_piece,row):
+                handle_promotion(screen, gs,end_position)
         dragging_piece = None
         drag_start = None  # Reset drag_start after the move
+
+def handle_promotion(screen, gs, end):
+    promotion_options = ["queen", "rook", "bishop", "knight"]
+    font = pygame.font.Font(None, 36)
+    
+    instruction_lines = ["Choose a promotion piece:"]
+    for option in promotion_options:
+        instruction_lines.append(f"Press {option[0]} for {option.capitalize()}")
+
+    text_height = sum([font.get_linesize() for _ in instruction_lines])
+    y_position = (BOARD_SIZE - text_height) // 2
+
+    screen.fill((139,69,19))
+
+    for line in instruction_lines:
+        text = font.render(line, True, (255, 255, 255))
+        rect = text.get_rect(center=(BOARD_SIZE // 2, y_position))
+        screen.blit(text, rect)
+        y_position += font.get_linesize()
+
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                for i, option in enumerate(promotion_options):
+                    if event.key == getattr(pygame, f"K_{option[0]}"):
+                        print("yessir")
+                        chosen_option = option
+                        gs.promote_pawn(end, chosen_option)
+                        return chosen_option
         
 if __name__ == "__main__":
     main()
