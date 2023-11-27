@@ -11,6 +11,8 @@ class GameState():
                       ["white-pawn","white-pawn","white-pawn","white-pawn","white-pawn","white-pawn","white-pawn","white-pawn"],
                       ["white-rook", "white-knight","white-bishop","white-queen","white-king","white-bishop", "white-knight","white-rook"]]
         self.white_to_move = True
+        self.white_king_moved = False
+        self.black_king_moved = False
         self.moveLog = []
     
     """
@@ -30,7 +32,10 @@ class GameState():
                 print("Invalid move, king in check")
                 return False
             else:
-                self.move(start, end)
+                if ("king" in piece) and (self.check_castling(start=start, end=end)):
+                    self.make_castling_move(start,end)   
+                else: 
+                    self.move(start, end)
                 return True
         else:
             print("Invalid move")
@@ -41,11 +46,58 @@ class GameState():
         end_row, end_column = end
         piece = self.board[start_row][start_column]
         
+        if ("king" in piece):
+            if "white" in piece:
+                self.white_king_moved = True
+            else:
+                self.black_king_moved = True
+                
         # Make the move
         self.board[end_row][end_column] = piece
         self.board[start_row][start_column] = "--"
         self.white_to_move = not self.white_to_move
-            
+    
+    def make_castling_move(self, start, end):
+        start_row, start_column = start
+        end_row, end_column = end
+        
+        piece = self.board[start_row][start_column]
+        self.white_to_move = not self.white_to_move
+        
+        if piece == "white-king" and start_row == 7:
+            self.board[7][4] = "--"
+            # White king-side castling
+            if end_row == 7 and end_column == 6:
+                self.board[7][5] = self.board[7][7]
+                self.board[7][7] = "--"
+                self.board[7][6] = piece
+                self.white_king_moved = True
+                return
+            # White queen-side castling
+            elif end_row == 7 and end_column == 2:
+                self.board[7][3] = self.board[7][0]
+                self.board[7][0] = "--"
+                self.board[7][2] = piece
+                self.white_king_moved = True
+                return
+        
+        elif piece == "black-king" and start_row == 0:
+            self.board[0][4] = "--"
+            # Black king-side castling
+            if end_row == 0 and end_column == 6:
+                self.board[0][5] = self.board[0][7]
+                self.board[0][7] = "--"
+                self.board[0][6] = piece
+                self.black_king_moved = True
+                return
+            # Black queen-side castling
+            elif end_row == 0 and end_column == 2:
+                self.board[0][3] = self.board[0][0]
+                self.board[0][0] = "--"
+                self.board[0][2] = piece
+                self.black_king_moved = True
+                return     
+               
     def check_for_promotion(self, piece, end_row):   
            return ("pawn" in piece) and (end_row == 0 and piece.startswith("white")) or (end_row == 7 and piece.startswith("black"))
        
@@ -55,7 +107,29 @@ class GameState():
         promoted_piece = f"{color}-{piece}"
         self.board[row][col] = promoted_piece
             
+    def check_castling(self, start, end):
+        start_row, start_column = start
+        end_row, end_column = end
         
+        piece = self.board[start_row][start_column]
+
+        if piece == "white-king" and start_row == 7 and not self.white_king_moved:
+            # White king-side castling
+            if end_row == 7 and end_column == 6:
+                return not self.white_king_moved and self.board[7][5] == "--" and self.board[7][6] == "--"
+            # White queen-side castling
+            elif end_row == 7 and end_column == 2:
+                return not self.white_king_moved and self.board[7][3] == "--" and self.board[7][2] == "--" and self.board[7][1] == "--"
+
+        elif piece == "black-king" and start_row == 0 and not self.black_king_moved:
+            # Black king-side castling
+            if end_row == 0 and end_column == 6:
+                return not self.black_king_moved and self.board[0][5] == "--" and self.board[0][6] == "--"
+            # Black queen-side castling
+            elif end_row == 0 and end_column == 2:
+                return not self.black_king_moved and self.board[0][3] == "--" and self.board[0][2] == "--" and self.board[0][1] == "--"
+
+        return False   
             
     def is_check_after_move(self, start, end):
         # Simulate the move on the current game state
@@ -246,4 +320,21 @@ class GameState():
                     if target_piece == "--" or not target_piece.startswith(color):
                         moves.append(((start_row, start_column), (row, col), target_piece))
 
+        # Check for castling moves
+        if color == "white" and not self.white_king_moved:
+            # White king-side castling
+            if not self.white_king_moved and self.board[7][5] == "--" and self.board[7][6] == "--":
+                moves.append(((7, 4), (7, 6), "--"))  # None signifies a non-capturing move
+            # White queen-side castling
+            if not self.white_king_moved and self.board[7][3] == "--" and self.board[7][2] == "--" and self.board[7][1] == "--":
+                moves.append(((7, 4), (7, 2), "--"))
+
+        elif color == "black" and not self.black_king_moved:
+            # Black king-side castling
+            if not self.black_king_moved and self.board[0][5] == "--" and self.board[0][6] == "--":
+                moves.append(((0, 4), (0, 6), "--"))
+            # Black queen-side castling
+            if not self.black_king_moved and self.board[0][3] == "--" and self.board[0][2] == "--" and self.board[0][1] == "--":
+                moves.append(((0, 4), (0, 2), "--"))
+                
         return moves
