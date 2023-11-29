@@ -98,39 +98,7 @@ class GameState():
                 self.black_king_moved = True
                 return     
                
-    def check_for_promotion(self, piece, end_row):   
-           return ("pawn" in piece) and (end_row == 0 and piece.startswith("white")) or (end_row == 7 and piece.startswith("black"))
-       
-    def promote_pawn(self, end, piece):
-        row, col = end
-        color = "black" if self.white_to_move else "white"
-        promoted_piece = f"{color}-{piece}"
-        self.board[row][col] = promoted_piece
-            
-    def check_castling(self, start, end):
-        start_row, start_column = start
-        end_row, end_column = end
-        
-        piece = self.board[start_row][start_column]
-
-        if piece == "white-king" and start_row == 7 and not self.white_king_moved:
-            # White king-side castling
-            if end_row == 7 and end_column == 6:
-                return not self.white_king_moved and self.board[7][5] == "--" and self.board[7][6] == "--"
-            # White queen-side castling
-            elif end_row == 7 and end_column == 2:
-                return not self.white_king_moved and self.board[7][3] == "--" and self.board[7][2] == "--" and self.board[7][1] == "--"
-
-        elif piece == "black-king" and start_row == 0 and not self.black_king_moved:
-            # Black king-side castling
-            if end_row == 0 and end_column == 6:
-                return not self.black_king_moved and self.board[0][5] == "--" and self.board[0][6] == "--"
-            # Black queen-side castling
-            elif end_row == 0 and end_column == 2:
-                return not self.black_king_moved and self.board[0][3] == "--" and self.board[0][2] == "--" and self.board[0][1] == "--"
-
-        return False   
-            
+                          
     def is_check_after_move(self, start, end):
         # Simulate the move on the current game state
         piece = self.board[start[0]][start[1]]
@@ -154,7 +122,22 @@ class GameState():
         return False
     
     
+    def is_checkmate(self):
+        color = "white" if self.white_to_move else "black"
+        moves = self.generate_moves(color)
+        for move in moves:
+            if not self.is_check_after_move(move[0],move[1]):
+                return False
+        return True
     
+    def is_stalemate(self):
+        opponent_color = "black" if self.white_to_move else "white"
+        moves = self.generate_moves(opponent_color)
+        for move in moves:
+            if "king" in move[2]:
+                return False
+        return True
+            
     def generate_moves(self, color):
         moves = []
 
@@ -177,8 +160,7 @@ class GameState():
                         moves.extend(self.generate_pawn_moves((row, col), color))
 
         return moves
-    
-    
+       
     def generate_pawn_moves(self, start, color):
         moves = []
         start_row, start_column = start
@@ -283,8 +265,7 @@ class GameState():
                 col += step_col
 
         return moves
-    
-    
+        
     def generate_knight_moves(self, start, color):
         moves = []
         start_row, start_column = start
@@ -338,3 +319,38 @@ class GameState():
                 moves.append(((0, 4), (0, 2), "--"))
                 
         return moves
+    
+    def check_castling(self, start, end):
+        start_row, start_column = start
+        end_row, end_column = end
+        
+        piece = self.board[start_row][start_column]
+
+        if piece == "white-king" and start_row == 7 and not self.white_king_moved:
+            # White king-side castling
+            if end_row == 7 and end_column == 6:
+                return not self.white_king_moved and self.board[7][5] == "--" and self.board[7][6] == "--"
+            # White queen-side castling
+            elif end_row == 7 and end_column == 2:
+                return not self.white_king_moved and self.board[7][3] == "--" and self.board[7][2] == "--" and self.board[7][1] == "--"
+
+        elif piece == "black-king" and start_row == 0 and not self.black_king_moved:
+            # Black king-side castling
+            if end_row == 0 and end_column == 6:
+                return not self.black_king_moved and self.board[0][5] == "--" and self.board[0][6] == "--"
+            # Black queen-side castling
+            elif end_row == 0 and end_column == 2:
+                return not self.black_king_moved and self.board[0][3] == "--" and self.board[0][2] == "--" and self.board[0][1] == "--"
+
+        return False  
+    
+    def check_for_promotion(self, end):
+        row = end[0]   
+        piece = self.board[end[0]][end[1]]
+        return ("pawn" in piece) and ((row == 0 and piece.startswith("white")) or (row == 7 and piece.startswith("black")))
+       
+    def promote_pawn(self, end, piece):
+        row, col = end
+        color = "black" if self.white_to_move else "white"
+        promoted_piece = f"{color}-{piece}"
+        self.board[row][col] = promoted_piece
