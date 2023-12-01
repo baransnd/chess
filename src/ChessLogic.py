@@ -98,7 +98,10 @@ class GameState():
                 self.black_king_moved = True
                 return     
                
-                          
+    """
+    looks to see if a move would leave own king in check, which would be illegal,
+    by looking if the opponents possible moves allows the capture of the king
+    """                      
     def is_check_after_move(self, start, end):
         # Simulate the move on the current game state
         piece = self.board[start[0]][start[1]]
@@ -121,7 +124,10 @@ class GameState():
 
         return False
     
-    
+    """
+    It is checkmate if a player has no moves remaining, which can avoid the king getting
+    captured on the next move.
+    """
     def is_checkmate(self):
         color = "white" if self.white_to_move else "black"
         moves = self.generate_moves(color)
@@ -130,6 +136,15 @@ class GameState():
                 return False
         return True
     
+    
+    """
+    This method checks if the opponent can capture the king, if yes it is mate,
+    if no it is stalemate.
+    
+    note: this is method is only called if a the current player has no legal moves left,
+    since it cannot be stalemate otherwise. So this function is only called if the is_checkmate
+    returns true (bad programming practice, should fix later.)
+    """
     def is_stalemate(self):
         opponent_color = "black" if self.white_to_move else "white"
         moves = self.generate_moves(opponent_color)
@@ -137,7 +152,10 @@ class GameState():
             if "king" in move[2]:
                 return False
         return True
-            
+    
+    """
+    generates all the possible (also illegal in the sense of checks) moves for a given color
+    """        
     def generate_moves(self, color):
         moves = []
 

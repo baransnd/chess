@@ -52,6 +52,7 @@ def draw_board(screen):
                 color = (139,69,19) 
             else:                    color = (255,230,250)
             pygame.draw.rect(screen, color, (column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+    pygame.draw.rect(screen, (50, 10, 10), (0, 0, BOARD_SIZE, BOARD_SIZE), 6)
 
 "draws the pieces on the board in accordance to their position in the game state"
 def draw_pieces(screen, board):
